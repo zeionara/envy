@@ -25,5 +25,5 @@ swift build
 Run the app:
 
 ```sh
-swift run Envy
+swift run envy make --from Assets/config.yml --to Assets/.env
 ```
