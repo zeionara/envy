@@ -22,8 +22,8 @@ swift build
 
 ## Running
 
-Run the app:
+Run the app to convert `Assets/config.yml` file with configuration in `yaml` format to `Assets/.env` file with configuration represented as a list of environment variables:
 
 ```sh
-swift run envy make --from Assets/config.yml --to Assets/.env
+swift run envy make --from config.yml --to .env && cat Assets/.env
 ```
