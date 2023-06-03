@@ -26,7 +26,7 @@ private func serialize (content: [String: Any], prefix: String = EMPTY_STRING, s
     let prefixWithSeparator = prefix == EMPTY_STRING ? prefix : prefix + separator
     var isFirstKey = prefix == EMPTY_STRING
 
-    for (key, value) in content {
+    for (key, value) in content.sorted(by: { $0.key < $1.key }) {
         let uppercasedKey = uppercase ? key.uppercased() : key
 
         if (isFirstKey) {
