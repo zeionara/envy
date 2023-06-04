@@ -20,6 +20,10 @@ enum YamlParsingError: Error {
     }
 }
 
+enum ReaderGenerationError: Error {
+    case readerIsNotSupported
+}
+
 private func serialize (content: [String: Any], prefix: String = EMPTY_STRING, separator: String = UNDERSCORE, uppercase: Bool = true, lowercase: Bool = false) throws -> [String] {
     var lines: [String] = []
 
@@ -58,12 +62,6 @@ struct Config {
     }
 
     init (parsing content: String) throws {
-        // let text = try String(contentsOf: Path.Assets.appendingPathComponent(sourcePath), encoding: .utf8)
-        // if let content = try Yams.load(yaml: text) as? [String: Any] {
-        //     self.content = content
-        //     return
-        // }
-
         guard let content = try Yams.load(yaml: content) as? [String: Any] else {
             throw YamlParsingError.incorrectResultFormat
         }
@@ -78,5 +76,14 @@ struct Config {
     func export (to destinationPath: String, as format: ConfigFormat = .snakeCase) throws {
         let content = try toString(separator: format.separator, uppercase: format.uppercase, lowercase: format.lowercase)
         try "\(content)\(NEW_LINE)".write(to: Path.Assets.appendingPathComponent(destinationPath), atomically: true, encoding: .utf8)
+    }
+
+    func makeReader (to destinationPath: String, as format: ConfigReaderFormat) throws {
+        switch format {
+            case .js:
+                print(destinationPath.appendingFileExtension(format.fileExtension))
+            // default:
+            //     throw ReaderGenerationError.readerIsNotSupported
+        }
     }
 }
