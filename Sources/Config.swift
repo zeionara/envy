@@ -54,6 +54,34 @@ private func serialize (content: [String: Any], prefix: String = EMPTY_STRING, s
     return lines
 }
 
+struct AnyEncodable: Encodable {
+    let encodeValue: (Encoder) throws -> Void
+
+    init<T: Encodable> (storing value: T) {
+        encodeValue = value.encode
+    }
+
+    func encode (to encoder: Encoder) throws {
+        try encodeValue(encoder)
+    }
+}
+
+func wrapAny (_ content: [String: Any]) throws -> AnyEncodable {
+    var wrappedContent: [String: AnyEncodable] = [:]
+
+    for (key, value) in content {
+        if let valueAsString = value as? String {
+            wrappedContent[key] = AnyEncodable(storing: valueAsString)
+        } else if let valueAsArray = value as? [String] {
+            wrappedContent[key] = AnyEncodable(storing: valueAsArray)
+        } else if let valueAsMap = value as? [String: Any] {
+            wrappedContent[key] = try wrapAny(valueAsMap)
+        }
+    }
+
+    return AnyEncodable(storing: wrappedContent)
+}
+
 struct Config {
     private let content: [String: Any]
 
@@ -78,10 +106,18 @@ struct Config {
         try "\(content)\(NEW_LINE)".write(to: Path.Assets.appendingPathComponent(destinationPath), atomically: true, encoding: .utf8)
     }
 
-    func makeReader (to destinationPath: String, as format: ConfigReaderFormat) throws {
+    func exportReader (to destinationPath: String, as format: ConfigReaderFormat) throws {
         switch format {
             case .js:
-                print(destinationPath.appendingFileExtension(format.fileExtension))
+                // let reader = ConfigReader(content)
+                // let data = try JSONEncoder().encode(reader)
+                let data = try JSONEncoder().encode(wrapAny(content))
+                let string = String(data: data, encoding: .utf8)
+
+                if let string = string {
+                    print(string)
+                }
+                // print(destinationPath.appendingFileExtension(format.fileExtension))
             // default:
             //     throw ReaderGenerationError.readerIsNotSupported
         }

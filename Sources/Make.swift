@@ -22,7 +22,7 @@ struct Make: ParsableCommand {
         try config.export(to: to, as: kebabCase ? .kebabCase : .snakeCase)
 
         if reader {
-            try config.makeReader(to: "\(to).reader", as: .js)
+            try config.exportReader(to: "\(to).reader", as: .js)
         }
     }
 }
