@@ -22,6 +22,7 @@ enum YamlParsingError: Error {
 
 enum ReaderGenerationError: Error {
     case readerIsNotSupported
+    case cannotSerialize(value: String)
 }
 
 private func serialize (content: [String: Any], prefix: String = EMPTY_STRING, separator: String = UNDERSCORE, uppercase: Bool = true, lowercase: Bool = false) throws -> [String] {
@@ -66,16 +67,25 @@ struct AnyEncodable: Encodable {
     }
 }
 
-func wrapAny (_ content: [String: Any]) throws -> AnyEncodable {
+func wrapAny (_ content: [String: Any], prefix: String = EMPTY_STRING, separator: String = UNDERSCORE, uppercase: Bool = true, lowercase: Bool = false) throws -> AnyEncodable {
     var wrappedContent: [String: AnyEncodable] = [:]
 
-    for (key, value) in content {
-        if let valueAsString = value as? String {
-            wrappedContent[key] = AnyEncodable(storing: valueAsString)
-        } else if let valueAsArray = value as? [String] {
-            wrappedContent[key] = AnyEncodable(storing: valueAsArray)
+    let prefixWithSeparator = prefix == EMPTY_STRING ? prefix : prefix + separator
+
+    // for (key, value) in content.sorted(by: { $0.key < $1.key }) {
+    for (key, value) in content.sorted(by: { $0.key < $1.key }) {
+        let uppercasedKey = uppercase ? key.uppercased() : lowercase ? key.lowercased() : key
+        let nextPrefix = "\(prefixWithSeparator)\(uppercasedKey)"
+
+        if let _ = value as? String {
+            wrappedContent[key] = AnyEncodable(storing: "process.env.\(nextPrefix)")
+        } else if let _ = value as? [String] {
+            wrappedContent[key] = AnyEncodable(storing: "process.env.\(nextPrefix)")
+            // wrappedContent[key] = AnyEncodable(storing: valueAsArray)
         } else if let valueAsMap = value as? [String: Any] {
-            wrappedContent[key] = try wrapAny(valueAsMap)
+            wrappedContent[key] = try wrapAny(valueAsMap, prefix: nextPrefix, separator: separator, uppercase: uppercase, lowercase: lowercase)
+        } else {
+            throw ReaderGenerationError.cannotSerialize(value: "\(value)")
         }
     }
 
