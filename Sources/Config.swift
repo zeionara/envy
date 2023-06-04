@@ -1,4 +1,6 @@
 import Foundation
+import OrderedCollections
+
 import Yams
 
 private let NEW_LINE = "\n"
@@ -68,11 +70,11 @@ struct AnyEncodable: Encodable {
 }
 
 func wrapAny (_ content: [String: Any], prefix: String = EMPTY_STRING, separator: String = UNDERSCORE, uppercase: Bool = true, lowercase: Bool = false) throws -> AnyEncodable {
-    var wrappedContent: [String: AnyEncodable] = [:]
+    // var wrappedContent: [String: AnyEncodable] = [:]
+    var wrappedContent: OrderedDictionary<String, AnyEncodable> = [:]
 
     let prefixWithSeparator = prefix == EMPTY_STRING ? prefix : prefix + separator
 
-    // for (key, value) in content.sorted(by: { $0.key < $1.key }) {
     for (key, value) in content.sorted(by: { $0.key < $1.key }) {
         let uppercasedKey = uppercase ? key.uppercased() : lowercase ? key.lowercased() : key
         let nextPrefix = "\(prefixWithSeparator)\(uppercasedKey)"

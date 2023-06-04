@@ -7,6 +7,8 @@ let package = Package(
     name: "Envy",
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", branch: "main"),
+        .package(url: "https://github.com/apple/swift-collections", branch: "main"),
+
         .package(url: "https://github.com/jpsim/Yams", branch: "main")
     ],
     targets: [
@@ -16,6 +18,8 @@ let package = Package(
             name: "envy",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "OrderedCollections", package: "swift-collections"),
+
                 .product(name: "Yams", package: "Yams")
             ],
             path: "Sources"
