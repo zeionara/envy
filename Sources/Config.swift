@@ -23,6 +23,7 @@ enum YamlParsingError: Error {
 enum ReaderGenerationError: Error {
     case readerIsNotSupported
     case cannotSerialize(value: String)
+    case cannotOpenFile(path: String)
 }
 
 private func serialize (content: [String: Any], prefix: String = EMPTY_STRING, separator: String = UNDERSCORE, uppercase: Bool = true, lowercase: Bool = false) throws -> [String] {
@@ -92,6 +93,31 @@ func wrapAny (_ content: [String: Any], prefix: String = EMPTY_STRING, separator
     return AnyEncodable(storing: wrappedContent)
 }
 
+func wrap (_ content: [String: Any], prefix: String = EMPTY_STRING, separator: String = UNDERSCORE, uppercase: Bool = true, lowercase: Bool = false) throws -> [String: Any] {
+    var wrappedContent: [String: Any] = [:]
+
+    let prefixWithSeparator = prefix == EMPTY_STRING ? prefix : prefix + separator
+
+    // for (key, value) in content.sorted(by: { $0.key < $1.key }) {
+    for (key, value) in content.sorted(by: { $0.key < $1.key }) {
+        let uppercasedKey = uppercase ? key.uppercased() : lowercase ? key.lowercased() : key
+        let nextPrefix = "\(prefixWithSeparator)\(uppercasedKey)"
+
+        if let _ = value as? String {
+            wrappedContent[key] = "process.env.\(nextPrefix)"
+        } else if let _ = value as? [String] {
+            wrappedContent[key] = "process.env.\(nextPrefix)"
+            // wrappedContent[key] = AnyEncodable(storing: valueAsArray)
+        } else if let valueAsMap = value as? [String: Any] {
+            wrappedContent[key] = try wrap(valueAsMap, prefix: nextPrefix, separator: separator, uppercase: uppercase, lowercase: lowercase)
+        } else {
+            throw ReaderGenerationError.cannotSerialize(value: "\(value)")
+        }
+    }
+
+    return wrappedContent
+}
+
 struct Config {
     private let content: [String: Any]
 
@@ -121,12 +147,34 @@ struct Config {
             case .js:
                 // let reader = ConfigReader(content)
                 // let data = try JSONEncoder().encode(reader)
-                let data = try JSONEncoder().encode(wrapAny(content))
-                let string = String(data: data, encoding: .utf8)
+                // let data = try JSONEncoder().encode(wrapAny(content))
+                // let string = String(data: data, encoding: .utf8)
 
-                if let string = string {
-                    print(string)
+                let url = Path.Assets.appendingPathComponent(destinationPath.appendingFileExtension(format.fileExtension))
+
+                guard let outputJson = OutputStream(url: url, append: false) else {
+                    throw ReaderGenerationError.cannotOpenFile(path: destinationPath)
                 }
+
+                outputJson.open()
+
+                // defer {
+                //     outputJson.close()
+                // }
+
+                let _ = try JSONSerialization.writeJSONObject(wrap(content), toStream: outputJson, options: [.sortedKeys, .prettyPrinted])
+                outputJson.close()
+
+                let content = try File.read(from: url)
+                let fixedContent = (
+                    "export const config = \(content.replacingOccurrences(of: " : \"", with: ": ").replacingOccurrences(of: "\"\n", with: "\n").replacingOccurrences(of: "\",\n", with: ",\n"))"
+                )
+
+                try fixedContent.write(to: url, atomically: true, encoding: .utf8)
+
+                // if let string = string {
+                //     print(string)
+                // }
                 // print(destinationPath.appendingFileExtension(format.fileExtension))
             // default:
             //     throw ReaderGenerationError.readerIsNotSupported

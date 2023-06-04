@@ -3,6 +3,10 @@ import Foundation
 import ArgumentParser
 import Yams
 
+enum CommandError: Error {
+    case cannotGenerateReaderForKebabCasedConfig
+}
+
 struct Make: ParsableCommand {
     @Flag(name: .shortAndLong, help: "Should use kebab case instead of snake case")
     var kebabCase: Bool = false
@@ -17,6 +21,10 @@ struct Make: ParsableCommand {
     var to: String = ".env"
 
     func run() throws {
+        if kebabCase && reader {
+            throw CommandError.cannotGenerateReaderForKebabCasedConfig
+        }
+
         let config = try Config(from: from)
 
         try config.export(to: to, as: kebabCase ? .kebabCase : .snakeCase)
