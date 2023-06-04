@@ -4,6 +4,9 @@ import ArgumentParser
 import Yams
 
 struct Make: ParsableCommand {
+    @Flag(name: .shortAndLong, help: "Should use kebab case instead of snake case")
+    var kebabCase: Bool = false
+
     @Option(name: .shortAndLong, help: "Path to the source yaml file")
     var from: String = "config.yml"
 
@@ -11,17 +14,6 @@ struct Make: ParsableCommand {
     var to: String = ".env"
 
     func run() throws {
-        // let text = try String(contentsOf: Path.Assets.appendingPathComponent(from), encoding: .utf8)
-        // let config = try Yams.load(yaml: text) as? [String: Any]
-        // print(config as Any)
-        // let config = decoder.decode(
-        // print(text)
-
-        let config = try Config(from: from)
-
-        try config.export(to: to)
-
-        // print(config)
-        // print("Converting config from \(from) to \(to)")
+        try Config(from: from).export(to: to, as: kebabCase ? .kebabCase : .snakeCase)
     }
 }

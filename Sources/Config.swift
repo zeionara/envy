@@ -20,14 +20,14 @@ enum YamlParsingError: Error {
     }
 }
 
-private func serialize (content: [String: Any], prefix: String = EMPTY_STRING, separator: String = UNDERSCORE, uppercase: Bool = true) throws -> [String] {
+private func serialize (content: [String: Any], prefix: String = EMPTY_STRING, separator: String = UNDERSCORE, uppercase: Bool = true, lowercase: Bool = false) throws -> [String] {
     var lines: [String] = []
 
     let prefixWithSeparator = prefix == EMPTY_STRING ? prefix : prefix + separator
     var isFirstKey = prefix == EMPTY_STRING
 
     for (key, value) in content.sorted(by: { $0.key < $1.key }) {
-        let uppercasedKey = uppercase ? key.uppercased() : key
+        let uppercasedKey = uppercase ? key.uppercased() : lowercase ? key.lowercased() : key
 
         if (isFirstKey) {
             isFirstKey = false
@@ -40,7 +40,7 @@ private func serialize (content: [String: Any], prefix: String = EMPTY_STRING, s
         } else if let valueAsArray = value as? [String] {
             lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsArray.joined(separator: COMMA))")
         } else if let valueAsMap = value as? [String: Any] {
-            lines.append(contentsOf: try serialize(content: valueAsMap, prefix: "\(prefixWithSeparator)\(uppercasedKey)", separator: separator, uppercase: uppercase))
+            lines.append(contentsOf: try serialize(content: valueAsMap, prefix: "\(prefixWithSeparator)\(uppercasedKey)", separator: separator, uppercase: uppercase, lowercase: lowercase))
         } else {
             throw YamlParsingError.cannotSerialize(value: "\(value)")
         }
@@ -71,11 +71,12 @@ struct Config {
         self.content = content
     }
 
-    func toString (separator: String = UNDERSCORE, uppercase: Bool = true) throws -> String {
-        return try serialize(content: self.content, separator: separator, uppercase: uppercase).joined(separator: NEW_LINE)
+    func toString (separator: String = UNDERSCORE, uppercase: Bool = true, lowercase: Bool = false) throws -> String {
+        return try serialize(content: self.content, separator: separator, uppercase: uppercase, lowercase: lowercase).joined(separator: NEW_LINE)
     }
 
-    func export (to destinationPath: String) throws {
-        try "\(toString())\(NEW_LINE)".write(to: Path.Assets.appendingPathComponent(destinationPath), atomically: true, encoding: .utf8)
+    func export (to destinationPath: String, as format: ConfigFormat = .snakeCase) throws {
+        let content = try toString(separator: format.separator, uppercase: format.uppercase, lowercase: format.lowercase)
+        try "\(content)\(NEW_LINE)".write(to: Path.Assets.appendingPathComponent(destinationPath), atomically: true, encoding: .utf8)
     }
 }

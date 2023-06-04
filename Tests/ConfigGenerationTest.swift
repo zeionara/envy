@@ -54,6 +54,6 @@ final class ConfigGenerationTest: XCTestCase {
 
     func testKebabCaseHandling() throws {
         // print(try Config(parsing: threeLevelConfigWithListSource).toString())
-        XCTAssertEqual(try Config(parsing: kebabCaseSource).toString(separator: "-", uppercase: false), kebabCaseDestination)
+        XCTAssertEqual(try Config(parsing: kebabCaseSource).toString(separator: "-", uppercase: false, lowercase: true), kebabCaseDestination)
     }
 }
