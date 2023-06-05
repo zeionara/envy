@@ -1,3 +1,5 @@
+import Foundation
+
 func wrapConfigReaderJS (_ content: [String: Any], prefix: String = EMPTY_STRING, separator: String = UNDERSCORE, uppercase: Bool = true, lowercase: Bool = false) throws -> [String: Any] {
     var wrappedContent: [String: Any] = [:]
 
@@ -15,6 +17,12 @@ func wrapConfigReaderJS (_ content: [String: Any], prefix: String = EMPTY_STRING
             wrappedContent[key] = "process.env.\(nextPrefix)"
         } else if let _ = value as? [any Numeric] {
             wrappedContent[key] = "process.env.\(nextPrefix)"
+        } else if let valueAsArrayOfObjects = value as? [[String: Any]] {
+            let nMaxPaddingZeros = Int(ceil(log(Double(valueAsArrayOfObjects.count))/log(10)))
+
+            wrappedContent[key] = try valueAsArrayOfObjects.enumerated().map{ i, object in
+                try wrapConfigReaderJS(object, prefix: "\(nextPrefix)\(separator)\(String(format: "%0\(nMaxPaddingZeros)d", i))", separator: separator, uppercase: uppercase, lowercase: lowercase)
+            }
         } else if let valueAsMap = value as? [String: Any] {
             wrappedContent[key] = try wrapConfigReaderJS(valueAsMap, prefix: nextPrefix, separator: separator, uppercase: uppercase, lowercase: lowercase)
         } else {

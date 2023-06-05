@@ -1,3 +1,5 @@
+import Foundation
+
 func serializeConfig (content: [String: Any], prefix: String = EMPTY_STRING, separator: String = UNDERSCORE, uppercase: Bool = true, lowercase: Bool = false) throws -> [String] {
     var lines: [String] = []
 
@@ -21,6 +23,17 @@ func serializeConfig (content: [String: Any], prefix: String = EMPTY_STRING, sep
             lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsArrayOfStrings.joined(separator: COMMA))")
         } else if let valueAsArrayOfNumerics = value as? [any Numeric] {
             lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsArrayOfNumerics.map{ "\($0)" }.joined(separator: COMMA))")
+        } else if let valueAsArrayOfObjects = value as? [[String: Any]] {
+            let nMaxPaddingZeros = Int(ceil(log(Double(valueAsArrayOfObjects.count))/log(10)))
+
+            for (i, object) in valueAsArrayOfObjects.enumerated() {
+                lines.append(
+                    contentsOf: try serializeConfig(
+                        content: object, prefix: "\(prefixWithSeparator)\(uppercasedKey)\(separator)\(String(format: "%0\(nMaxPaddingZeros)d", i))",
+                        separator: separator, uppercase: uppercase, lowercase: lowercase
+                    )
+                )
+            }
         } else if let valueAsMap = value as? [String: Any] {
             lines.append(contentsOf: try serializeConfig(content: valueAsMap, prefix: "\(prefixWithSeparator)\(uppercasedKey)", separator: separator, uppercase: uppercase, lowercase: lowercase))
         } else {

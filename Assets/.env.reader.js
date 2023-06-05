@@ -8,5 +8,13 @@ export const config = {
     "bar": process.env.FOO_BAR,
     "qux": process.env.FOO_QUX
   },
-  "fred": process.env.FRED
+  "fred": process.env.FRED,
+  "one" : [
+    {
+      "two": process.env.ONE_0_TWO
+    },
+    {
+      "four": process.env.ONE_1_FOUR
+    }
+  ]
 }

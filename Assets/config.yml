@@ -8,3 +8,6 @@ fred:
   - xyzzy
   - plugh
   - thud
+one:
+  - two: three
+  - four: five

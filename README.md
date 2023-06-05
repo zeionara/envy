@@ -4,7 +4,7 @@
     <img src="Assets/logo.png"/>
 </p>
 
-A miniature tool for flattening configuration files. The tool takes an input configuration in `yaml` format and emits an output configuration in format of setting bash environment variables.
+A miniature tool for flattening configuration files. The tool takes an input configuration in `yaml` format and emits an output configuration in format of setting bash environment variables.  
 
 ## Prerequisites
 
