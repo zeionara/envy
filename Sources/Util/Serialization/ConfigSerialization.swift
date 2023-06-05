@@ -15,8 +15,12 @@ func serializeConfig (content: [String: Any], prefix: String = EMPTY_STRING, sep
 
         if let valueAsString = value as? String {
             lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsString)")
-        } else if let valueAsArray = value as? [String] {
-            lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsArray.joined(separator: COMMA))")
+        } else if let valueAsNumeric = value as? any Numeric {
+            lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsNumeric)")
+        } else if let valueAsArrayOfStrings = value as? [String] {
+            lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsArrayOfStrings.joined(separator: COMMA))")
+        } else if let valueAsArrayOfNumerics = value as? [any Numeric] {
+            lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsArrayOfNumerics.map{ "\($0)" }.joined(separator: COMMA))")
         } else if let valueAsMap = value as? [String: Any] {
             lines.append(contentsOf: try serializeConfig(content: valueAsMap, prefix: "\(prefixWithSeparator)\(uppercasedKey)", separator: separator, uppercase: uppercase, lowercase: lowercase))
         } else {

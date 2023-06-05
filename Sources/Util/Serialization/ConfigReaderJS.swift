@@ -9,7 +9,11 @@ func wrapConfigReaderJS (_ content: [String: Any], prefix: String = EMPTY_STRING
 
         if let _ = value as? String {
             wrappedContent[key] = "process.env.\(nextPrefix)"
+        } else if let _ = value as? any Numeric {
+            wrappedContent[key] = "process.env.\(nextPrefix)"
         } else if let _ = value as? [String] {
+            wrappedContent[key] = "process.env.\(nextPrefix)"
+        } else if let _ = value as? [any Numeric] {
             wrappedContent[key] = "process.env.\(nextPrefix)"
         } else if let valueAsMap = value as? [String: Any] {
             wrappedContent[key] = try wrapConfigReaderJS(valueAsMap, prefix: nextPrefix, separator: separator, uppercase: uppercase, lowercase: lowercase)

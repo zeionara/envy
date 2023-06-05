@@ -42,6 +42,23 @@ CORGE_GRAULT_GARPLY=waldo,fred
 FOO_BAR_BAZ=qux
 """
 
+private let configWithNumbersSource = """
+foo: 1
+bar:
+    - 17
+    - 19
+baz:
+    qux: 2023
+"""
+
+private let configWithNumbersDestination = """
+BAR=17,19
+
+BAZ_QUX=2023
+
+FOO=1
+"""
+
 final class ConfigGenerationTest: XCTestCase {
     func testTwoLevelConfigHandling() throws {
         XCTAssertEqual(try Config(parsing: twoLevelConfigSource).toString(), twoLevelConfigDestination)
@@ -55,5 +72,9 @@ final class ConfigGenerationTest: XCTestCase {
     func testKebabCaseHandling() throws {
         // print(try Config(parsing: threeLevelConfigWithListSource).toString())
         XCTAssertEqual(try Config(parsing: kebabCaseSource).toString(separator: "-", uppercase: false, lowercase: true), kebabCaseDestination)
+    }
+
+    func testNumbersHandling() throws {
+        XCTAssertEqual(try Config(parsing: configWithNumbersSource).toString(), configWithNumbersDestination)
     }
 }
