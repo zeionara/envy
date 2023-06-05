@@ -59,6 +59,17 @@ BAZ_QUX=2023
 FOO=1
 """
 
+private let configWithListOfObjectsSource = """
+foo:
+    - bar: baz
+    - corge: grault
+"""
+
+private let configWithListOfObjectsDestination = """
+FOO_0_BAR=baz
+FOO_1_CORGE=grault
+"""
+
 final class ConfigGenerationTest: XCTestCase {
     func testTwoLevelConfigHandling() throws {
         XCTAssertEqual(try Config(parsing: twoLevelConfigSource).toString(), twoLevelConfigDestination)
@@ -76,5 +87,9 @@ final class ConfigGenerationTest: XCTestCase {
 
     func testNumbersHandling() throws {
         XCTAssertEqual(try Config(parsing: configWithNumbersSource).toString(), configWithNumbersDestination)
+    }
+
+    func testListOfObjectsHandling () throws {
+        XCTAssertEqual(try Config(parsing: configWithListOfObjectsSource).toString(), configWithListOfObjectsDestination)
     }
 }
