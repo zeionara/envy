@@ -70,6 +70,15 @@ FOO_0_BAR=baz
 FOO_1_CORGE=grault
 """
 
+private let configWithDashedNameSource = """
+foo:
+    bar-baz: qux
+"""
+
+private let configWithDashedNameDestination = """
+FOO__BAR_BAZ=qux
+"""
+
 final class ConfigGenerationTest: XCTestCase {
     func testTwoLevelConfigHandling() throws {
         XCTAssertEqual(try Config(parsing: twoLevelConfigSource).toString(), twoLevelConfigDestination)
@@ -91,5 +100,9 @@ final class ConfigGenerationTest: XCTestCase {
 
     func testListOfObjectsHandling () throws {
         XCTAssertEqual(try Config(parsing: configWithListOfObjectsSource).toString(), configWithListOfObjectsDestination)
+    }
+
+    func testDashedName () throws {
+        XCTAssertEqual(try Config(parsing: configWithDashedNameSource).toString(), configWithDashedNameDestination)
     }
 }

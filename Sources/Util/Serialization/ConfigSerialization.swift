@@ -1,13 +1,36 @@
 import Foundation
 
-func serializeConfig (content: [String: Any], prefix: String = EMPTY_STRING, separator: String = UNDERSCORE, uppercase: Bool = true, lowercase: Bool = false) throws -> [String] {
+func hasMultipartKeys (within content: [String: Any], separator: String = DASH) -> Bool {
+    for (key, value) in content {
+        if (key.contains(separator)) {
+            return true
+        }
+        if let value = value as? [String: Any] {
+            if (hasMultipartKeys(within: value, separator: separator)) {
+                return true
+            }
+        }
+    }
+
+    return false
+}
+
+func serializeConfig (
+    content: [String: Any], prefix: String = EMPTY_STRING,
+    separator: String = UNDERSCORE, long_separator: String = DOUBLE_UNDERSCORE, dash_replacement: String = UNDERSCORE,
+    uppercase: Bool = true, lowercase: Bool = false
+) throws -> [String] {
     var lines: [String] = []
 
-    let prefixWithSeparator = prefix == EMPTY_STRING ? prefix : prefix + separator
-    var isFirstKey = prefix == EMPTY_STRING
+    let isRootCall = prefix == EMPTY_STRING
+
+    let fixedSeparator = isRootCall ? separator : hasMultipartKeys(within: content) ? long_separator : separator
+
+    let prefixWithSeparator = isRootCall ? prefix : prefix + fixedSeparator
+    var isFirstKey = isRootCall
 
     for (key, value) in content.sorted(by: { $0.key < $1.key }) {
-        let uppercasedKey = uppercase ? key.uppercased() : lowercase ? key.lowercased() : key
+        let uppercasedKey = (uppercase ? key.uppercased() : lowercase ? key.lowercased() : key).replacingOccurrences(of: DASH, with: dash_replacement)
 
         if (isFirstKey) {
             isFirstKey = false
@@ -29,13 +52,20 @@ func serializeConfig (content: [String: Any], prefix: String = EMPTY_STRING, sep
             for (i, object) in valueAsArrayOfObjects.enumerated() {
                 lines.append(
                     contentsOf: try serializeConfig(
-                        content: object, prefix: "\(prefixWithSeparator)\(uppercasedKey)\(separator)\(String(format: "%0\(nMaxPaddingZeros)d", i))",
-                        separator: separator, uppercase: uppercase, lowercase: lowercase
+                        content: object, prefix: "\(prefixWithSeparator)\(uppercasedKey)\(fixedSeparator)\(String(format: "%0\(nMaxPaddingZeros)d", i))",
+                        separator: fixedSeparator, long_separator: long_separator, dash_replacement: dash_replacement,
+                        uppercase: uppercase, lowercase: lowercase
                     )
                 )
             }
         } else if let valueAsMap = value as? [String: Any] {
-            lines.append(contentsOf: try serializeConfig(content: valueAsMap, prefix: "\(prefixWithSeparator)\(uppercasedKey)", separator: separator, uppercase: uppercase, lowercase: lowercase))
+            lines.append(
+                contentsOf: try serializeConfig(
+                    content: valueAsMap, prefix: "\(prefixWithSeparator)\(uppercasedKey)",
+                    separator: fixedSeparator, long_separator: long_separator, dash_replacement: dash_replacement,
+                    uppercase: uppercase, lowercase: lowercase
+                )
+            )
         } else {
             throw ConfigSerializationError.cannotSerialize(value: "\(value)")
         }
