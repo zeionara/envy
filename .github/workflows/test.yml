@@ -1,0 +1,14 @@
+name: Run unit tests
+on:
+  - push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: swift:latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: log workflow title
+        run: echo 'Running tests...'
+      - name: run tests
+        run: swift test
