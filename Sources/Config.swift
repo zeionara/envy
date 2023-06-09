@@ -17,7 +17,11 @@ struct Config {
     }
 
     func toString (separator: String = UNDERSCORE, uppercase: Bool = true, lowercase: Bool = false) throws -> String {
-        return try serializeConfig(content: self.content, separator: separator, uppercase: uppercase, lowercase: lowercase).joined(separator: NEW_LINE)
+        return try serializeConfig(
+            content: self.content,
+            keySeparator: hasMultipartKeys(within: content) ? "\(separator)\(separator)" : separator, keyPartSeparatorReplacement: separator,
+            uppercase: uppercase, lowercase: lowercase
+        ).joined(separator: NEW_LINE)
     }
 
     func export (to destinationPath: String, as format: ConfigFormat = .snakeCase) throws {

@@ -17,20 +17,23 @@ func hasMultipartKeys (within content: [String: Any], separator: String = DASH) 
 
 func serializeConfig (
     content: [String: Any], prefix: String = EMPTY_STRING,
-    separator: String = UNDERSCORE, long_separator: String = DOUBLE_UNDERSCORE, dash_replacement: String = UNDERSCORE,
+    keySeparator: String = UNDERSCORE, keyPartSeparator: String = DASH, keyPartSeparatorReplacement: String = UNDERSCORE,
+    // separator: String = UNDERSCORE, long_separator: String = DOUBLE_UNDERSCORE, dash_replacement: String = UNDERSCORE,
     uppercase: Bool = true, lowercase: Bool = false
 ) throws -> [String] {
     var lines: [String] = []
 
     let isRootCall = prefix == EMPTY_STRING
 
-    let fixedSeparator = isRootCall ? hasMultipartKeys(within: content) ? long_separator : separator : separator
-
-    let prefixWithSeparator = isRootCall ? prefix : prefix + fixedSeparator
+    let prefixWithSeparator = isRootCall ? prefix : prefix + keySeparator
     var isFirstKey = isRootCall
 
     for (key, value) in content.sorted(by: { $0.key < $1.key }) {
-        let uppercasedKey = (uppercase ? key.uppercased() : lowercase ? key.lowercased() : key).replacingOccurrences(of: DASH, with: dash_replacement)
+        var uppercasedKey: String = uppercase ? key.uppercased() : lowercase ? key.lowercased() : key
+
+        if (keyPartSeparator != keyPartSeparatorReplacement) {
+            uppercasedKey = uppercasedKey.replacingOccurrences(of: keyPartSeparator, with: keyPartSeparatorReplacement)
+        }
 
         if (isFirstKey) {
             isFirstKey = false
@@ -52,8 +55,9 @@ func serializeConfig (
             for (i, object) in valueAsArrayOfObjects.enumerated() {
                 lines.append(
                     contentsOf: try serializeConfig(
-                        content: object, prefix: "\(prefixWithSeparator)\(uppercasedKey)\(fixedSeparator)\(String(format: "%0\(nMaxPaddingZeros)d", i))",
-                        separator: fixedSeparator, long_separator: long_separator, dash_replacement: dash_replacement,
+                        content: object, prefix: "\(prefixWithSeparator)\(uppercasedKey)\(keySeparator)\(String(format: "%0\(nMaxPaddingZeros)d", i))",
+                        keySeparator: keySeparator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: keyPartSeparatorReplacement,
+                        // separator: , long_separator: long_separator, dash_replacement: dash_replacement,
                         uppercase: uppercase, lowercase: lowercase
                     )
                 )
@@ -62,7 +66,8 @@ func serializeConfig (
             lines.append(
                 contentsOf: try serializeConfig(
                     content: valueAsMap, prefix: "\(prefixWithSeparator)\(uppercasedKey)",
-                    separator: fixedSeparator, long_separator: long_separator, dash_replacement: dash_replacement,
+                    keySeparator: keySeparator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: keyPartSeparatorReplacement,
+                    // separator: fixedSeparator, long_separator: long_separator, dash_replacement: dash_replacement,
                     uppercase: uppercase, lowercase: lowercase
                 )
             )
