@@ -24,7 +24,7 @@ func serializeConfig (
 
     let isRootCall = prefix == EMPTY_STRING
 
-    let fixedSeparator = isRootCall ? separator : hasMultipartKeys(within: content) ? long_separator : separator
+    let fixedSeparator = isRootCall ? hasMultipartKeys(within: content) ? long_separator : separator : separator
 
     let prefixWithSeparator = isRootCall ? prefix : prefix + fixedSeparator
     var isFirstKey = isRootCall

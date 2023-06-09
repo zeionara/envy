@@ -79,6 +79,15 @@ private let configWithDashedNameDestination = """
 FOO__BAR_BAZ=qux
 """
 
+private let configWithDashedNameFirstLevelSource = """
+foo-bar:
+    baz: qux
+"""
+
+private let configWithDashedNameFirstLevelDestination = """
+FOO_BAR__BAZ=qux
+"""
+
 final class ConfigGenerationTest: XCTestCase {
     func testTwoLevelConfigHandling() throws {
         XCTAssertEqual(try Config(parsing: twoLevelConfigSource).toString(), twoLevelConfigDestination)
@@ -104,5 +113,9 @@ final class ConfigGenerationTest: XCTestCase {
 
     func testDashedName () throws {
         XCTAssertEqual(try Config(parsing: configWithDashedNameSource).toString(), configWithDashedNameDestination)
+    }
+
+    func testDashedNameFirstLevel () throws {
+        XCTAssertEqual(try Config(parsing: configWithDashedNameFirstLevelSource).toString(), configWithDashedNameFirstLevelDestination)
     }
 }

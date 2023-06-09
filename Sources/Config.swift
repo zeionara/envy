@@ -52,7 +52,11 @@ struct Config {
     }
 
     func exportReader (to destinationPath: String, as format: ConfigReaderFormat) throws {
-        try serializeReader(as: format).write(
+        let reader = try serializeReader(as: format)
+
+        print(reader)
+
+        try reader.write(
             to: Path.Assets.appendingPathComponent(destinationPath.appendingFileExtension(format.fileExtension)),
             atomically: true,
             encoding: .utf8
