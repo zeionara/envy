@@ -64,7 +64,7 @@ struct Config {
     func exportReader (to destinationPath: String, as format: ConfigReaderFormat) throws {
         let reader = try serializeReader(as: format)
 
-        print(reader)
+        // print(reader)
 
         try reader.write(
             to: Path.Assets.appendingPathComponent(destinationPath.appendingFileExtension(format.fileExtension)),
