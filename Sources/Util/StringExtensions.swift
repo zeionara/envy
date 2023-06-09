@@ -11,15 +11,25 @@ public enum NamingConventionConversionError: Error {
 
 public enum NamingConvention {
     case kebabCase
+    case camelCase
     case unknown
 
-    var regex: Regex<Substring>? {
+    var pattern: String? {
         switch self {
             case .kebabCase:
-                return try? Regex("[a-z0-9]+(?:-[a-z0-9]+)*")
+                return "[a-z0-9]+(?:-[a-z0-9]+)*"
+            case .camelCase:
+                return "[a-z0-9]+(?:[A-Z0-9][a-z0-9]*)*"
             case .unknown:
                 return nil
         }
+    }
+
+    var regex: Regex<Substring>? {
+        if let pattern = pattern {
+            return try? Regex(pattern)
+        }
+        return nil
     }
 }
 
@@ -49,6 +59,8 @@ public extension String {
                         return "\(components[0])\(components[1...].map{ $0.capitalized }.joined())"
                     }
                     return ""
+                case .camelCase:
+                    return self
                 case .unknown:
                     throw NamingConventionConversionError.cannotInferSourceNamingConvention(of: self)
             }
@@ -60,5 +72,24 @@ public extension String {
 
             // return "--"
         }
+    }
+}
+
+public extension String {
+    func dropQuotationMarksAroundKeys () throws -> String {
+        let pattern = try Regex("\"(?<key>\(NamingConvention.camelCase.pattern!))\"\\s*:\\s*")
+        var mutableSelf = self
+
+        while true {
+            if let result = try? pattern.firstMatch(in: mutableSelf) {
+                if let keyMatch = result["key"], let keyRange = keyMatch.range {
+                    mutableSelf.replaceSubrange(result.range, with: "\(mutableSelf[keyRange]): ")
+                }
+            } else {
+                break
+            }
+        }
+
+        return mutableSelf
     }
 }

@@ -55,9 +55,9 @@ struct Config {
                 )
                 let content = String(decoding: data, as: UTF8.self)
 
-                return (
+                return try (
                     "export const config = \(content.replacingOccurrences(of: " : \"", with: ": ").replacingOccurrences(of: "\"\n", with: "\n").replacingOccurrences(of: "\",\n", with: ",\n"))"
-                )
+                ).dropQuotationMarksAroundKeys()
         }
     }
 
