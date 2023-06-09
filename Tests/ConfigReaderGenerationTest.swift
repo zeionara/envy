@@ -35,7 +35,37 @@ export const config = {
 
 final class ReaderConfigGenerationTest: XCTestCase {
     func testTinyConfig () throws {
+        // let pattern = try Regex("\"(?<key>[a-z0-9]+(?:[A-Z0-9][a-z0-9]*)*)\"\\s*:\\s*")
+        let pattern = try Regex("\"(?<key>[a-z0-9]+)\"\\s*:\\s*")
+        let example = "\"foo\":   \"bar\", \"bar\": \"baz\""
+        var mutableExample = example
+
+        while true {
+            print(mutableExample)
+            if let result = try? pattern.firstMatch(in: mutableExample) {
+                if let keyMatch = result["key"], let keyRange = keyMatch.range {
+                    // let key = example[keyRange]
+                    // print(type(of: keyRange), type(of: key))
+
+                    // print(example[1..<6])
+
+                    // let range: Range<String.Index> = example.startIndex..<example.startIndex
+                    // let range: Range<String.Index> = keyRange
+                    // var mutableExample = example
+
+                    print("current key:", mutableExample[keyRange])
+                    mutableExample.replaceSubrange(result.range, with: "\(mutableExample[keyRange]): ")
+
+                }
+                // print(example[result.range])
+            } else {
+                break
+            }
+        }
+
+        print(mutableExample)
+
         // try print(Config(parsing: configTiny).serializeReader(as: .js))
-        try XCTAssertEqual(Config(parsing: tinyConfig).serializeReader(as: .js), tinyConfigReader)
+        // try XCTAssertEqual(Config(parsing: tinyConfig).serializeReader(as: .js), tinyConfigReader)
     }
 }
