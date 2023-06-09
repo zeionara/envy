@@ -11,3 +11,5 @@ fred:
 one:
   - two: three
   - four: five
+some-thing:
+  another: thing

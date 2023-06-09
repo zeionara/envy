@@ -43,10 +43,16 @@ struct Config {
     //     }
     // }
 
-    func serializeReader (as format: ConfigReaderFormat) throws -> String {
+    func serializeReader (as format: ConfigReaderFormat, separator: String = UNDERSCORE) throws -> String {
         switch format {
             case .js:
-                let data = try JSONSerialization.data(withJSONObject: wrapConfigReaderJS(content), options: [.sortedKeys, .prettyPrinted])
+                let data = try JSONSerialization.data(
+                    withJSONObject: wrapConfigReaderJS(
+                        content,
+                        keySeparator: hasMultipartKeys(within: content) ? "\(separator)\(separator)" : separator, keyPartSeparatorReplacement: separator
+                    ),
+                    options: [.sortedKeys, .prettyPrinted]
+                )
                 let content = String(decoding: data, as: UTF8.self)
 
                 return (

@@ -1,20 +1,23 @@
 export const config = {
   "corge" : {
     "grault" : {
-      "garply": process.env.CORGE_GRAULT_GARPLY
+      "garply": process.env.CORGE__GRAULT__GARPLY
     }
   },
   "foo" : {
-    "bar": process.env.FOO_BAR,
-    "qux": process.env.FOO_QUX
+    "bar": process.env.FOO__BAR,
+    "qux": process.env.FOO__QUX
   },
   "fred": process.env.FRED,
   "one" : [
     {
-      "two": process.env.ONE_0_TWO
+      "two": process.env.ONE__0__TWO
     },
     {
-      "four": process.env.ONE_1_FOUR
+      "four": process.env.ONE__1__FOUR
     }
-  ]
+  ],
+  "someThing" : {
+    "another": process.env.SOME_THING__ANOTHER
+  }
 }
