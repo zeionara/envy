@@ -19,32 +19,36 @@ func wrapConfigReaderJS (
 
         let nextPrefix = "\(prefixWithSeparator)\(uppercasedKey)"
 
-        if let _ = value as? String {
-            wrappedContent[keyCamelCased] = "process.env.\(nextPrefix)"
-        } else if let _ = value as? any Numeric {
-            wrappedContent[keyCamelCased] = "process.env.\(nextPrefix)"
-        } else if let _ = value as? [String] {
-            wrappedContent[keyCamelCased] = "process.env.\(nextPrefix)"
-        } else if let _ = value as? [any Numeric] {
-            wrappedContent[keyCamelCased] = "process.env.\(nextPrefix)"
-        } else if let valueAsArrayOfObjects = value as? [[String: Any]] {
-            let nMaxPaddingZeros = Int(ceil(log(Double(valueAsArrayOfObjects.count))/log(10)))
+        do {
+            try stringEncoder.encodeConfigReaderProperty(key: keyCamelCased, env: nextPrefix, value: value, content: &wrappedContent)
+        } catch ConfigEncodingError.unsupportedValueScheme {
+            do {
+                try numericEncoder.encodeConfigReaderProperty(key: keyCamelCased, env: nextPrefix, value: value, content: &wrappedContent)
+            } catch ConfigEncodingError.unsupportedValueScheme {
+                if let _ = value as? [String] {
+                    wrappedContent[keyCamelCased] = "process.env.\(nextPrefix)"
+                } else if let _ = value as? [any Numeric] {
+                    wrappedContent[keyCamelCased] = "process.env.\(nextPrefix)"
+                } else if let valueAsArrayOfObjects = value as? [[String: Any]] {
+                    let nMaxPaddingZeros = Int(ceil(log(Double(valueAsArrayOfObjects.count))/log(10)))
 
-            wrappedContent[keyCamelCased] = try valueAsArrayOfObjects.enumerated().map{ i, object in
-                try wrapConfigReaderJS(
-                    object, prefix: "\(nextPrefix)\(keySeparator)\(String(format: "%0\(nMaxPaddingZeros)d", i))",
-                    keySeparator: keySeparator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: keyPartSeparatorReplacement,
-                    uppercase: uppercase, lowercase: lowercase
-                )
+                    wrappedContent[keyCamelCased] = try valueAsArrayOfObjects.enumerated().map{ i, object in
+                        try wrapConfigReaderJS(
+                            object, prefix: "\(nextPrefix)\(keySeparator)\(String(format: "%0\(nMaxPaddingZeros)d", i))",
+                            keySeparator: keySeparator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: keyPartSeparatorReplacement,
+                            uppercase: uppercase, lowercase: lowercase
+                        )
+                    }
+                } else if let valueAsMap = value as? [String: Any] {
+                    wrappedContent[keyCamelCased] = try wrapConfigReaderJS(
+                        valueAsMap, prefix: nextPrefix,
+                        keySeparator: keySeparator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: keyPartSeparatorReplacement,
+                        uppercase: uppercase, lowercase: lowercase
+                    )
+                } else {
+                    throw ConfigReaderSerializationError.cannotSerialize(value: "\(value)")
+                }
             }
-        } else if let valueAsMap = value as? [String: Any] {
-            wrappedContent[keyCamelCased] = try wrapConfigReaderJS(
-                valueAsMap, prefix: nextPrefix,
-                keySeparator: keySeparator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: keyPartSeparatorReplacement,
-                uppercase: uppercase, lowercase: lowercase
-            )
-        } else {
-            throw ConfigReaderSerializationError.cannotSerialize(value: "\(value)")
         }
     }
 

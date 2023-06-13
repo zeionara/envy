@@ -15,6 +15,9 @@ func hasMultipartKeys (within content: [String: Any], separator: String = DASH) 
     return false
 }
 
+let stringEncoder = StringConfigEncoder()
+let numericEncoder = NumericConfigEncoder()
+
 func serializeConfig (
     content: [String: Any], prefix: String = EMPTY_STRING,
     keySeparator: String = UNDERSCORE, keyPartSeparator: String = DASH, keyPartSeparatorReplacement: String = UNDERSCORE,
@@ -27,8 +30,6 @@ func serializeConfig (
 
     let prefixWithSeparator = isRootCall ? prefix : prefix + keySeparator
     var isFirstKey = isRootCall
-
-    let stringEncoder = StringConfigEncoder()
 
     for (key, value) in content.sorted(by: { $0.key < $1.key }) {
         var uppercasedKey: String = uppercase ? key.uppercased() : lowercase ? key.lowercased() : key
@@ -47,42 +48,45 @@ func serializeConfig (
         //     lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsString)")
         // } else
 
-        do {
-            try stringEncoder.encodeConfigProperty(env: "\(prefixWithSeparator)\(uppercasedKey)", value: value, lines: &lines)
-        } catch ConfigEncodingError.unsupportedValueScheme {
-            if let valueAsNumeric = value as? any Numeric {
-                lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsNumeric)")
-            } else if let valueAsArrayOfStrings = value as? [String] {
-                lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsArrayOfStrings.joined(separator: COMMA))")
-            } else if let valueAsArrayOfNumerics = value as? [any Numeric] {
-                lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsArrayOfNumerics.map{ "\($0)" }.joined(separator: COMMA))")
-            } else if let valueAsArrayOfObjects = value as? [[String: Any]] {
-                let nMaxPaddingZeros = Int(ceil(log(Double(valueAsArrayOfObjects.count))/log(10)))
+        let env = "\(prefixWithSeparator)\(uppercasedKey)"
 
-                for (i, object) in valueAsArrayOfObjects.enumerated() {
+        do {
+            try stringEncoder.encodeConfigProperty(env: env, value: value, lines: &lines)
+        } catch ConfigEncodingError.unsupportedValueScheme {
+            do {
+                try numericEncoder.encodeConfigProperty(env: env, value: value, lines: &lines)
+            } catch ConfigEncodingError.unsupportedValueScheme {
+                if let valueAsArrayOfStrings = value as? [String] {
+                    lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsArrayOfStrings.joined(separator: COMMA))")
+                } else if let valueAsArrayOfNumerics = value as? [any Numeric] {
+                    lines.append("\(prefixWithSeparator)\(uppercasedKey)=\(valueAsArrayOfNumerics.map{ "\($0)" }.joined(separator: COMMA))")
+                } else if let valueAsArrayOfObjects = value as? [[String: Any]] {
+                    let nMaxPaddingZeros = Int(ceil(log(Double(valueAsArrayOfObjects.count))/log(10)))
+
+                    for (i, object) in valueAsArrayOfObjects.enumerated() {
+                        lines.append(
+                            contentsOf: try serializeConfig(
+                                content: object, prefix: "\(prefixWithSeparator)\(uppercasedKey)\(keySeparator)\(String(format: "%0\(nMaxPaddingZeros)d", i))",
+                                keySeparator: keySeparator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: keyPartSeparatorReplacement,
+                                // separator: , long_separator: long_separator, dash_replacement: dash_replacement,
+                                uppercase: uppercase, lowercase: lowercase
+                            )
+                        )
+                    }
+                } else if let valueAsMap = value as? [String: Any] {
                     lines.append(
                         contentsOf: try serializeConfig(
-                            content: object, prefix: "\(prefixWithSeparator)\(uppercasedKey)\(keySeparator)\(String(format: "%0\(nMaxPaddingZeros)d", i))",
+                            content: valueAsMap, prefix: "\(prefixWithSeparator)\(uppercasedKey)",
                             keySeparator: keySeparator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: keyPartSeparatorReplacement,
-                            // separator: , long_separator: long_separator, dash_replacement: dash_replacement,
+                            // separator: fixedSeparator, long_separator: long_separator, dash_replacement: dash_replacement,
                             uppercase: uppercase, lowercase: lowercase
                         )
                     )
+                } else {
+                    throw ConfigSerializationError.cannotSerialize(value: "\(value)")
                 }
-            } else if let valueAsMap = value as? [String: Any] {
-                lines.append(
-                    contentsOf: try serializeConfig(
-                        content: valueAsMap, prefix: "\(prefixWithSeparator)\(uppercasedKey)",
-                        keySeparator: keySeparator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: keyPartSeparatorReplacement,
-                        // separator: fixedSeparator, long_separator: long_separator, dash_replacement: dash_replacement,
-                        uppercase: uppercase, lowercase: lowercase
-                    )
-                )
-            } else {
-                throw ConfigSerializationError.cannotSerialize(value: "\(value)")
             }
         }
-
     }
 
     return lines
