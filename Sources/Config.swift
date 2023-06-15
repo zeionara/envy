@@ -42,14 +42,8 @@ struct Config {
                     uppercase: uppercase, lowercase: lowercase
                 ).encodeConfigReaderProperty(key: EMPTY_STRING, env: EMPTY_STRING, value: content, content: &encodedContent)
 
-                print(encodedContent)
-
                 let data = try JSONSerialization.data(
                     withJSONObject: encodedContent,
-                    // withJSONObject: wrapConfigReaderJS(
-                    //     content,
-                    //     keySeparator: hasMultipartKeys(within: content) ? "\(separator)\(separator)" : separator, keyPartSeparatorReplacement: separator
-                    // ),
                     options: [.sortedKeys, .prettyPrinted]
                 )
                 let content = String(decoding: data, as: UTF8.self)
