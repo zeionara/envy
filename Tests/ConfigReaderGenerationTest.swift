@@ -64,10 +64,10 @@ export const config = {
 
 final class ReaderConfigGenerationTest: XCTestCase {
     func testTinyConfig () throws {
-        try XCTAssertEqual(Config(parsing: tinyConfig).serializeReader(as: .js), tinyConfigReader)
+        try XCTAssertEqual(Config(parsing: tinyConfig).toStringReader(as: .js), tinyConfigReader)
     }
 
     func testTinyConfigWithMultipartKeys () throws {
-        try XCTAssertEqual(Config(parsing: tinyConfigWithMultipartKeys).serializeReader(as: .js), tinyConfigReaderWithMultipartKeys)
+        try XCTAssertEqual(Config(parsing: tinyConfigWithMultipartKeys).toStringReader(as: .js), tinyConfigReaderWithMultipartKeys)
     }
 }
