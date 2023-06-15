@@ -32,14 +32,24 @@ struct Config {
         try "\(content)\(NEW_LINE)".write(to: Path.Assets.appendingPathComponent(destinationPath), atomically: true, encoding: .utf8)
     }
 
-    func toStringReader (as format: ConfigReaderFormat, separator: String = UNDERSCORE) throws -> String {
+    func toStringReader (as format: ConfigReaderFormat, separator: String = UNDERSCORE, keyPartSeparator: String = DASH, uppercase: Bool = true, lowercase: Bool = false) throws -> String {
         switch format {
             case .js:
+                var encodedContent: [String: Any] = [:]
+
+                try ObjectConfigEncoder(
+                    keySeparator: hasMultipartKeys(within: content) ? "\(separator)\(separator)" : separator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: separator,
+                    uppercase: uppercase, lowercase: lowercase
+                ).encodeConfigReaderProperty(key: EMPTY_STRING, env: EMPTY_STRING, value: content, content: &encodedContent)
+
+                print(encodedContent)
+
                 let data = try JSONSerialization.data(
-                    withJSONObject: wrapConfigReaderJS(
-                        content,
-                        keySeparator: hasMultipartKeys(within: content) ? "\(separator)\(separator)" : separator, keyPartSeparatorReplacement: separator
-                    ),
+                    withJSONObject: encodedContent,
+                    // withJSONObject: wrapConfigReaderJS(
+                    //     content,
+                    //     keySeparator: hasMultipartKeys(within: content) ? "\(separator)\(separator)" : separator, keyPartSeparatorReplacement: separator
+                    // ),
                     options: [.sortedKeys, .prettyPrinted]
                 )
                 let content = String(decoding: data, as: UTF8.self)

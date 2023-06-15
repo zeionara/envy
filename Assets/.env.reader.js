@@ -11,10 +11,10 @@ export const config = {
   fred: process.env.FRED,
   one: [
     {
-      two: process.env.ONE__0__TWO
+      two: process.env.ONE__0TWO
     },
     {
-      four: process.env.ONE__1__FOUR
+      four: process.env.ONE__1FOUR
     }
   ],
   someThing: {

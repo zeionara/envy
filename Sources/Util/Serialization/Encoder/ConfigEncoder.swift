@@ -2,18 +2,13 @@ enum ConfigEncodingError: Error {
     case unsupportedValueScheme
 }
 
-typealias EncodedConfigReaderProperty = (
-    value: Any,
-    env: Bool
-)
-
 protocol ConfigEncoder {
     associatedtype ValueType
 
     func encodeConfigProperty(_ value: Any) throws -> ValueType
 
     func encodeConfigProperty(env: String, value: Any, lines: inout [String]) throws
-    func encodeConfigReaderProperty(key: String, env: String, value: Any, content: inout [String: Any]) throws
+    func encodeConfigReaderProperty(key: String, env: String, value: Any, content: inout [String: Any], root: Bool) throws
 }
 
 protocol SingleLineConfigProperty: ConfigEncoder {}
@@ -41,16 +36,9 @@ extension SingleLineConfigProperty {
 }
 
 extension EnvOnlyConfigReaderProperty {
-    func encodeConfigReaderProperty(key: String, env: String, value: Any, content: inout [String: Any]) throws { // multiple props can be added to config as a result of encoding
+    func encodeConfigReaderProperty(key: String, env: String, value: Any, content: inout [String: Any], root: Bool = false) throws { // multiple props can be added to config as a result of encoding
         let _ = try encodeConfigProperty(value) // make sure that passed value is indeed of a required type
         pushEnv(key: key, value: env, content: &content)
-        // let value = try encodeConfigReaderProperty(env: env, value: value)
-
-        // if (value.env) {
-        //     self.pushEnv(key: key, value: value.value, content: &content)
-        // } else {
-        //     self.push(key: key, value: , content: &content)
-        // }
     }
 }
 
