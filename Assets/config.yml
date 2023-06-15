@@ -13,3 +13,7 @@ one:
   - four: five
 some-thing:
   another: thing
+verbatim-prop:
+  value:
+    - foobar
+  verbatim: true

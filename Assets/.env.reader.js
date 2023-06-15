@@ -11,13 +11,16 @@ export const config = {
   fred: process.env.FRED,
   one: [
     {
-      two: process.env.ONE__0TWO
+      two: process.env.ONE__0__TWO
     },
     {
-      four: process.env.ONE__1FOUR
+      four: process.env.ONE__1__FOUR
     }
   ],
   someThing: {
     another: process.env.SOME_THING__ANOTHER
-  }
+  },
+  verbatimProp: [
+    "foobar
+  ]
 }

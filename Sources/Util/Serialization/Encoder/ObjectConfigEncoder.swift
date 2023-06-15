@@ -25,7 +25,7 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
     convenience init (keySeparator: String, keyPartSeparator: String, keyPartSeparatorReplacement: String, uppercase: Bool, lowercase: Bool) {
         self.init (
             encoders: [
-                StringConfigEncoder(), NumericConfigEncoder(), StringArrayConfigEncoder(), NumericArrayConfigEncoder()
+                PropSpecConfigEncoder(), StringConfigEncoder(), NumericConfigEncoder(), StringArrayConfigEncoder(), NumericArrayConfigEncoder()
             ],
             keySeparator: keySeparator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: keyPartSeparatorReplacement, uppercase: uppercase, lowercase: lowercase
         )

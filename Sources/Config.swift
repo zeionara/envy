@@ -24,7 +24,7 @@ struct Config {
             uppercase: uppercase, lowercase: lowercase
         ).encodeConfigProperty(env: "", value: content, lines: &lines)
 
-        return lines.joined(separator: NEW_LINE)
+        return (lines.joined(separator: NEW_LINE) as String).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     func export (to destinationPath: String, as format: ConfigFormat = .snakeCase) throws {
@@ -41,6 +41,8 @@ struct Config {
                     keySeparator: hasMultipartKeys(within: content) ? "\(separator)\(separator)" : separator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: separator,
                     uppercase: uppercase, lowercase: lowercase
                 ).encodeConfigReaderProperty(key: EMPTY_STRING, env: EMPTY_STRING, value: content, content: &encodedContent)
+
+                print(encodedContent)
 
                 let data = try JSONSerialization.data(
                     withJSONObject: encodedContent,
