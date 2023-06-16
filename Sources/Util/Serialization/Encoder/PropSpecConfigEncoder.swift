@@ -3,10 +3,10 @@ struct PropSpec {
     let verbatim: Bool
 }
 
-struct PropSpecConfigEncoder: ConfigEncoder {
+class PropSpecConfigEncoder: ConfigEncoder {
     typealias ValueType = PropSpec
 
-    let encoders: [any ConfigEncoder] = [StringConfigEncoder(), NumericConfigEncoder()]
+    var encoders: [any ConfigEncoder] = []
 
     func encodeConfigProperty(_ value: Any) throws -> ValueType {
         guard let value = value as? [String: Any], let wrappedValue = value["value"], let verbatim = value["verbatim"] as? Bool else {
@@ -23,10 +23,10 @@ struct PropSpecConfigEncoder: ConfigEncoder {
             var encoded = false
 
             for encoder in encoders {
-                try encoder.encodeConfigProperty(env: env, value: spec.value, lines: &lines)
-
-                encoded = true
-                break
+                if let _ = try? encoder.encodeConfigProperty(env: env, value: spec.value, lines: &lines) {
+                    encoded = true
+                    break
+                }
             }
 
             if !encoded {
@@ -44,10 +44,16 @@ struct PropSpecConfigEncoder: ConfigEncoder {
             var encoded = false
 
             for encoder in encoders {
-                try encoder.encodeConfigReaderProperty(key: key, env: env, value: spec.value, content: &content, root: root)
-
-                encoded = true
-                break
+                // print(encoder, spec.value)
+                if let _ = try? encoder.encodeConfigReaderProperty(key: key, env: env, value: spec.value, content: &content, root: root) {
+                    encoded = true
+                    break
+                }
+                // do {
+                //     try encoder.encodeConfigReaderProperty(key: key, env: env, value: spec.value, content: &content, root: root)
+                // } catch {
+                //     print(error)
+                // }
             }
 
             if !encoded {

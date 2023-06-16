@@ -23,9 +23,11 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
     }
 
     convenience init (keySeparator: String, keyPartSeparator: String, keyPartSeparatorReplacement: String, uppercase: Bool, lowercase: Bool) {
+        var propSpecEncoder = PropSpecConfigEncoder()
+
         self.init (
             encoders: [
-                PropSpecConfigEncoder(), StringConfigEncoder(), NumericConfigEncoder(), StringArrayConfigEncoder(), NumericArrayConfigEncoder()
+                propSpecEncoder, StringConfigEncoder(), NumericConfigEncoder(), StringArrayConfigEncoder(), NumericArrayConfigEncoder()
             ],
             keySeparator: keySeparator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: keyPartSeparatorReplacement, uppercase: uppercase, lowercase: lowercase
         )
@@ -38,6 +40,8 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
                 self
             ] as [any ConfigEncoder]
         )
+
+        propSpecEncoder.encoders = encoders
         // self.encoders.append(self)
     }
 
@@ -50,6 +54,7 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
 
         for (key, value) in try encodeConfigProperty(value).sorted(by: { $0.key < $1.key }) {
             var casedKey = uppercase ? key.uppercased() : lowercase ? key.lowercased() : key
+
             let camelCasedKey = try key.camelCased
 
             if (keyPartSeparator != keySeparator) {

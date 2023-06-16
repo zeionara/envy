@@ -42,7 +42,7 @@ struct Config {
                     uppercase: uppercase, lowercase: lowercase
                 ).encodeConfigReaderProperty(key: EMPTY_STRING, env: EMPTY_STRING, value: content, content: &encodedContent)
 
-                print(encodedContent)
+                // print(encodedContent)
 
                 let data = try JSONSerialization.data(
                     withJSONObject: encodedContent,

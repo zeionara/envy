@@ -45,6 +45,9 @@ public extension String {
         if let _ = try? NamingConvention.kebabCase.regex?.wholeMatch(in: self) {
             return .kebabCase
         }
+        if let _ = try? NamingConvention.camelCase.regex?.wholeMatch(in: self) {
+            return .camelCase
+        }
         
         return .unknown
     }
@@ -62,6 +65,7 @@ public extension String {
                 case .camelCase:
                     return self
                 case .unknown:
+                    print(self)
                     throw NamingConventionConversionError.cannotInferSourceNamingConvention(of: self)
             }
             // let pattern = try Regex("[a-z0-9]+(?:-[a-z0-9]+)*")

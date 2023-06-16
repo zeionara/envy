@@ -13,7 +13,9 @@ one:
   - four: five
 some-thing:
   another: thing
-verbatim-prop:
-  value:
-    - foobar
-  verbatim: true
+verbatim-upper:
+  verbatim-prop:
+    value:
+      - foobar:
+          qux: quux
+    verbatim: false
