@@ -21,12 +21,6 @@ export const config = {
     another: process.env.SOME_THING__ANOTHER
   },
   verbatimUpper: {
-    verbatimProp: [
-      {
-        foobar: {
-          qux: process.env.VERBATIM_UPPER__VERBATIM_PROP__0__FOOBAR__QUX
-        }
-      }
-    ]
+    verbatimProp: "someString"
   }
 }

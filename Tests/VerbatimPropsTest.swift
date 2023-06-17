@@ -30,7 +30,7 @@ final class VerbatimPropsTest: XCTestCase {
             """,
             reader: """
             export const config = {
-              foo: bar
+              foo: "bar"
             }
             """
         ).test()
@@ -72,7 +72,7 @@ final class VerbatimPropsTest: XCTestCase {
             export const config = {
               foo: {
                 bar: {
-                  baz: qux
+                  baz: "qux"
                 },
                 verbatim: true
               }

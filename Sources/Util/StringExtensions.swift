@@ -7,11 +7,13 @@ let DASH = "-"
 
 public enum NamingConventionConversionError: Error {
     case cannotInferSourceNamingConvention(of: String)
+    case notImplemented
 }
 
 public enum NamingConvention {
     case kebabCase
     case camelCase
+    case capitalSnakeCase
     case unknown
 
     var pattern: String? {
@@ -20,6 +22,8 @@ public enum NamingConvention {
                 return "[a-z0-9]+(?:-[a-z0-9]+)*"
             case .camelCase:
                 return "[a-z0-9]+(?:[A-Z0-9][a-z0-9]*)*"
+            case .capitalSnakeCase:
+                return "[A-Z0-9_]+"
             case .unknown:
                 return nil
         }
@@ -64,8 +68,9 @@ public extension String {
                     return ""
                 case .camelCase:
                     return self
+                case .capitalSnakeCase:
+                    throw NamingConventionConversionError.notImplemented
                 case .unknown:
-                    print(self)
                     throw NamingConventionConversionError.cannotInferSourceNamingConvention(of: self)
             }
             // let pattern = try Regex("[a-z0-9]+(?:-[a-z0-9]+)*")
@@ -88,6 +93,23 @@ public extension String {
             if let result = try? pattern.firstMatch(in: mutableSelf) {
                 if let keyMatch = result["key"], let keyRange = keyMatch.range {
                     mutableSelf.replaceSubrange(result.range, with: "\(mutableSelf[keyRange]): ")
+                }
+            } else {
+                break
+            }
+        }
+
+        return mutableSelf
+    }
+
+    func dropQuotationMarksAroundValues () throws -> String {
+        let pattern = try Regex("\"(?<key>process\\.env\\.\(NamingConvention.capitalSnakeCase.pattern!))\"")
+        var mutableSelf = self
+
+        while true {
+            if let result = try? pattern.firstMatch(in: mutableSelf) {
+                if let keyMatch = result["key"], let keyRange = keyMatch.range {
+                    mutableSelf.replaceSubrange(result.range, with: "\(mutableSelf[keyRange])")
                 }
             } else {
                 break

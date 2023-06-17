@@ -15,7 +15,5 @@ some-thing:
   another: thing
 verbatim-upper:
   verbatim-prop:
-    value:
-      - foobar:
-          qux: quux
-    verbatim: false
+    value: someString
+    verbatim: true
