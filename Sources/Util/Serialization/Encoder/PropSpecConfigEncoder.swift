@@ -16,14 +16,14 @@ class PropSpecConfigEncoder: ConfigEncoder {
         return PropSpec(value: wrappedValue, verbatim: verbatim)
     }
 
-    func encodeConfigProperty (env: String, value: Any, lines: inout [String], root: Bool = true) throws {
+    func encodeConfigProperty (env: String, value: Any, lines: inout [String]) throws {
         let spec = try encodeConfigProperty(value)
 
         if !spec.verbatim {
             var encoded = false
 
             for encoder in encoders {
-                if let _ = try? encoder.encodeConfigProperty(env: env, value: spec.value, lines: &lines, root: root) {
+                if let _ = try? encoder.encodeConfigProperty(env: env, value: spec.value, lines: &lines) {
                     encoded = true
                     break
                 }
@@ -35,7 +35,7 @@ class PropSpecConfigEncoder: ConfigEncoder {
         }
     }
 
-    func encodeConfigReaderProperty (key: String?, env: String, value: Any, content: inout [String: Any], root: Bool = true) throws {
+    func encodeConfigReaderProperty (key: String?, env: String, value: Any, content: inout [String: Any]) throws {
         let spec = try encodeConfigProperty(value)
 
         if spec.verbatim {
@@ -47,7 +47,7 @@ class PropSpecConfigEncoder: ConfigEncoder {
 
             for encoder in encoders {
                 // print(encoder, spec.value)
-                if let _ = try? encoder.encodeConfigReaderProperty(key: key, env: env, value: spec.value, content: &content, root: root) {
+                if let _ = try? encoder.encodeConfigReaderProperty(key: key, env: env, value: spec.value, content: &content) {
                     encoded = true
                     break
                 }

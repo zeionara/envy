@@ -20,6 +20,9 @@ struct Make: ParsableCommand {
     @Option(name: .shortAndLong, help: "Path to the destination environment configuration file")
     var to: String = ".env"
 
+    @Option(name: .shortAndLong, help: "Environment variable name prefix")
+    var prefix: String? = nil
+
     func run() throws {
         if kebabCase && reader {
             throw CommandError.cannotGenerateReaderForKebabCasedConfig
@@ -27,10 +30,10 @@ struct Make: ParsableCommand {
 
         let config = try Config(from: from)
 
-        try config.export(to: to, as: kebabCase ? .kebabCase : .snakeCase)
+        try config.export(to: to, as: kebabCase ? .kebabCase : .snakeCase, prefix: prefix)
 
         if reader {
-            try config.exportReader(to: "\(to).reader", as: .js)
+            try config.exportReader(to: "\(to).reader", as: .js, prefix: prefix)
         }
     }
 }

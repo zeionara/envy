@@ -12,7 +12,7 @@ struct ObjectArrayConfigEncoder: EnvOnlyConfigReaderProperty, BasicConfigPropert
     
     let objectEncoder: ObjectConfigEncoder
 
-    func encodeConfigReaderProperty (key: String?, env: String, value: Any, content: inout [String: Any], root: Bool = true) throws {
+    func encodeConfigReaderProperty (key: String?, env: String, value: Any, content: inout [String: Any]) throws {
         // print(key, value, content)
 
         let items = try encodeConfigProperty(value)
@@ -24,7 +24,7 @@ struct ObjectArrayConfigEncoder: EnvOnlyConfigReaderProperty, BasicConfigPropert
 
                 // print(key, subContent)
 
-                try objectEncoder.encodeConfigReaderProperty(key: nil, env: "\(env)\(keySeparator)\(String(format: "%0\(nMaxPaddingZeros)d", i))", value: item, content: &subContent, root: false)
+                try objectEncoder.encodeConfigReaderProperty(key: nil, env: "\(env)\(keySeparator)\(String(format: "%0\(nMaxPaddingZeros)d", i))", value: item, content: &subContent)
 
                 // print(key, subContent)
 
@@ -33,12 +33,12 @@ struct ObjectArrayConfigEncoder: EnvOnlyConfigReaderProperty, BasicConfigPropert
         }
     }
 
-    func encodeConfigProperty (env: String, value: Any, lines: inout [String], root: Bool = true) throws {
+    func encodeConfigProperty (env: String, value: Any, lines: inout [String]) throws {
         let items = try encodeConfigProperty(value)
         let nMaxPaddingZeros = Int(ceil(log(Double(items.count))/log(10)))
 
         for (i, item) in items.enumerated() {
-            try objectEncoder.encodeConfigProperty(env: "\(env)\(keySeparator)\(String(format: "%0\(nMaxPaddingZeros)d", i))", value: item, lines: &lines, root: false)
+            try objectEncoder.encodeConfigProperty(env: "\(env)\(keySeparator)\(String(format: "%0\(nMaxPaddingZeros)d", i))", value: item, lines: &lines)
         }
     }
 }

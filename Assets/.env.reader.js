@@ -1,24 +1,24 @@
 export const config = {
   corge: {
     grault: {
-      garply: process.env.CORGE__GRAULT__GARPLY
+      garply: process.env.ROOT__CORGE__GRAULT__GARPLY
     }
   },
   foo: {
-    bar: process.env.FOO__BAR,
-    qux: process.env.FOO__QUX
+    bar: process.env.ROOT__FOO__BAR,
+    qux: process.env.ROOT__FOO__QUX
   },
-  fred: process.env.FRED,
+  fred: process.env.ROOT__FRED,
   one: [
     {
-      two: process.env.ONE__0__TWO
+      two: process.env.ROOT__ONE__0__TWO
     },
     {
-      four: process.env.ONE__1__FOUR
+      four: process.env.ROOT__ONE__1__FOUR
     }
   ],
   someThing: {
-    another: process.env.SOME_THING__ANOTHER
+    another: process.env.ROOT__SOME_THING__ANOTHER
   },
   verbatimUpper: {
     verbatimProp: "someString"

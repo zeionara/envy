@@ -8,8 +8,8 @@ protocol ConfigEncoder {
 
     func encodeConfigProperty(_ value: Any) throws -> ValueType
 
-    func encodeConfigProperty(env: String, value: Any, lines: inout [String], root: Bool) throws
-    func encodeConfigReaderProperty(key: String?, env: String, value: Any, content: inout [String: Any], root: Bool) throws
+    func encodeConfigProperty(env: String, value: Any, lines: inout [String]) throws
+    func encodeConfigReaderProperty(key: String?, env: String, value: Any, content: inout [String: Any]) throws
 }
 
 protocol SingleLineConfigProperty: ConfigEncoder {}
@@ -31,13 +31,13 @@ extension ConfigEncoder {
 }
 
 extension SingleLineConfigProperty {
-    func encodeConfigProperty(env: String, value: Any, lines: inout [String], root: Bool = true) throws { // multiple lines can be added to config as a result of encoding
+    func encodeConfigProperty(env: String, value: Any, lines: inout [String]) throws { // multiple lines can be added to config as a result of encoding
         self.push(key: env, value: try encodeConfigProperty(value), lines: &lines)
     }
 }
 
 extension EnvOnlyConfigReaderProperty {
-    func encodeConfigReaderProperty(key: String?, env: String, value: Any, content: inout [String: Any], root: Bool = false) throws { // multiple props can be added to config as a result of encoding
+    func encodeConfigReaderProperty(key: String?, env: String, value: Any, content: inout [String: Any]) throws { // multiple props can be added to config as a result of encoding
         let _ = try encodeConfigProperty(value)// make sure that passed value is indeed of a required type
 
         if let key = key {

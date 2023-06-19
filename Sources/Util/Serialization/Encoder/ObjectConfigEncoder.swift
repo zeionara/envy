@@ -45,10 +45,10 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
         // self.encoders.append(self)
     }
 
-    func encodeConfigReaderProperty (key: String?, env: String, value: Any, content: inout [String: Any], root: Bool = true) throws {
-        // let isRootCall = env == EMPTY_STRING
+    func encodeConfigReaderProperty (key: String?, env: String, value: Any, content: inout [String: Any]) throws {
+        let isRootCall = env == EMPTY_STRING
 
-        let prefix = root ? env : "\(env)\(keySeparator)"
+        let prefix = isRootCall ? env : "\(env)\(keySeparator)"
 
         var subContent: [String: Any] = [:]
 
@@ -68,11 +68,11 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
 
             for encoder in encoders {
                 if let _ = key {
-                    guard let _ = try? encoder.encodeConfigReaderProperty(key: camelCasedKey, env: nextPrefix, value: value, content: &subContent, root: false) else {
+                    guard let _ = try? encoder.encodeConfigReaderProperty(key: camelCasedKey, env: nextPrefix, value: value, content: &subContent) else {
                         continue
                     }
                 } else {
-                    guard let _ = try? encoder.encodeConfigReaderProperty(key: camelCasedKey, env: nextPrefix, value: value, content: &content, root: false) else {
+                    guard let _ = try? encoder.encodeConfigReaderProperty(key: camelCasedKey, env: nextPrefix, value: value, content: &content) else {
                         continue
                     }
                 }
@@ -91,10 +91,10 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
         }
     }
 
-    func encodeConfigProperty (env: String, value: Any, lines: inout [String], root: Bool = true) throws {
-        let isRootCall = root // env == EMPTY_STRING
+    func encodeConfigProperty (env: String, value: Any, lines: inout [String]) throws {
+        let isRootCall = env == EMPTY_STRING
 
-        let prefix = root ? env : "\(env)\(keySeparator)"
+        let prefix = isRootCall ? env : "\(env)\(keySeparator)"
 
         var isFirstKey = isRootCall
 
@@ -116,7 +116,7 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
             var encoded = false
 
             for encoder in encoders { // try all configured encoders, the first encoder which completes the encoding without an exception is accepted
-                if let _ = try? encoder.encodeConfigProperty(env: nextPrefix, value: value, lines: &lines, root: false) {
+                if let _ = try? encoder.encodeConfigProperty(env: nextPrefix, value: value, lines: &lines) {
                     encoded = true
                     break
                 }

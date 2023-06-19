@@ -2,7 +2,7 @@ import Foundation
 
 func hasMultipartKeys (within content: [String: Any], separator: String = DASH) -> Bool {
     for (key, value) in content {
-        if (key.contains(separator)) {
+        if (isMultipartKey(key, separator: separator)) {
             return true
         }
         if let value = value as? [String: Any] {
@@ -13,4 +13,8 @@ func hasMultipartKeys (within content: [String: Any], separator: String = DASH) 
     }
 
     return false
+}
+
+func isMultipartKey (_ key: String, separator: String = DASH) -> Bool {
+    return key.contains(separator)
 }
