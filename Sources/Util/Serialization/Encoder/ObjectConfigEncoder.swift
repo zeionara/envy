@@ -23,7 +23,7 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
     }
 
     convenience init (keySeparator: String, keyPartSeparator: String, keyPartSeparatorReplacement: String, uppercase: Bool, lowercase: Bool) {
-        var propSpecEncoder = PropSpecConfigEncoder()
+        let propSpecEncoder = PropSpecConfigEncoder()
 
         self.init (
             encoders: [
@@ -45,17 +45,18 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
         // self.encoders.append(self)
     }
 
-    func encodeConfigReaderProperty (key: String, env: String, value: Any, content: inout [String: Any], root: Bool = true) throws {
+    func encodeConfigReaderProperty (key: String?, env: String, value: Any, content: inout [String: Any], root: Bool = true) throws {
         // let isRootCall = env == EMPTY_STRING
 
-        let prefix = env == EMPTY_STRING ? env : "\(env)\(keySeparator)"
+        let prefix = root ? env : "\(env)\(keySeparator)"
 
         var subContent: [String: Any] = [:]
 
-        for (key, value) in try encodeConfigProperty(value).sorted(by: { $0.key < $1.key }) {
-            var casedKey = uppercase ? key.uppercased() : lowercase ? key.lowercased() : key
+        for (subKey, value) in try encodeConfigProperty(value).sorted(by: { $0.key < $1.key }) {
 
-            let camelCasedKey = try key.camelCased
+            var casedKey = uppercase ? subKey.uppercased() : lowercase ? subKey.lowercased() : subKey
+
+            let camelCasedKey = try subKey.camelCased
 
             if (keyPartSeparator != keySeparator) {
                 casedKey = casedKey.replacingOccurrences(of: keyPartSeparator, with: keyPartSeparatorReplacement)
@@ -66,12 +67,12 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
             var encoded = false
 
             for encoder in encoders {
-                if root {
-                    guard let _ = try? encoder.encodeConfigReaderProperty(key: camelCasedKey, env: nextPrefix, value: value, content: &content, root: false) else {
+                if let _ = key {
+                    guard let _ = try? encoder.encodeConfigReaderProperty(key: camelCasedKey, env: nextPrefix, value: value, content: &subContent, root: false) else {
                         continue
                     }
                 } else {
-                    guard let _ = try? encoder.encodeConfigReaderProperty(key: camelCasedKey, env: nextPrefix, value: value, content: &subContent, root: false) else {
+                    guard let _ = try? encoder.encodeConfigReaderProperty(key: camelCasedKey, env: nextPrefix, value: value, content: &content, root: false) else {
                         continue
                     }
                 }
@@ -80,21 +81,20 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
                 break
             }
 
-
             if !encoded {
                 throw ConfigSerializationError.cannotSerialize(value: "\(value)")
             }
         }
 
-        if !root {
+        if let key = key {
             content[key] = subContent
         }
     }
 
-    func encodeConfigProperty (env: String, value: Any, lines: inout [String]) throws {
-        let isRootCall = env == EMPTY_STRING
+    func encodeConfigProperty (env: String, value: Any, lines: inout [String], root: Bool = true) throws {
+        let isRootCall = root // env == EMPTY_STRING
 
-        let prefix = isRootCall ? env : "\(env)\(keySeparator)"
+        let prefix = root ? env : "\(env)\(keySeparator)"
 
         var isFirstKey = isRootCall
 
@@ -116,7 +116,7 @@ class ObjectConfigEncoder: BasicConfigPropertyEncoder, ObjectEncoder {
             var encoded = false
 
             for encoder in encoders { // try all configured encoders, the first encoder which completes the encoding without an exception is accepted
-                if let _ = try? encoder.encodeConfigProperty(env: nextPrefix, value: value, lines: &lines) {
+                if let _ = try? encoder.encodeConfigProperty(env: nextPrefix, value: value, lines: &lines, root: false) {
                     encoded = true
                     break
                 }

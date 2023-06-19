@@ -16,14 +16,14 @@ class PropSpecConfigEncoder: ConfigEncoder {
         return PropSpec(value: wrappedValue, verbatim: verbatim)
     }
 
-    func encodeConfigProperty (env: String, value: Any, lines: inout [String]) throws {
+    func encodeConfigProperty (env: String, value: Any, lines: inout [String], root: Bool = true) throws {
         let spec = try encodeConfigProperty(value)
 
         if !spec.verbatim {
             var encoded = false
 
             for encoder in encoders {
-                if let _ = try? encoder.encodeConfigProperty(env: env, value: spec.value, lines: &lines) {
+                if let _ = try? encoder.encodeConfigProperty(env: env, value: spec.value, lines: &lines, root: root) {
                     encoded = true
                     break
                 }
@@ -35,11 +35,13 @@ class PropSpecConfigEncoder: ConfigEncoder {
         }
     }
 
-    func encodeConfigReaderProperty (key: String, env: String, value: Any, content: inout [String: Any], root: Bool = true) throws {
+    func encodeConfigReaderProperty (key: String?, env: String, value: Any, content: inout [String: Any], root: Bool = true) throws {
         let spec = try encodeConfigProperty(value)
 
         if spec.verbatim {
-            content[key] = spec.value
+            if let key = key {
+                content[key] = spec.value
+            }
         } else {
             var encoded = false
 

@@ -35,17 +35,23 @@ struct Config {
     func toStringReader (as format: ConfigReaderFormat, separator: String = UNDERSCORE, keyPartSeparator: String = DASH, uppercase: Bool = true, lowercase: Bool = false) throws -> String {
         switch format {
             case .js:
+                let root = ""
+
                 var encodedContent: [String: Any] = [:]
 
                 try ObjectConfigEncoder(
                     keySeparator: hasMultipartKeys(within: content) ? "\(separator)\(separator)" : separator, keyPartSeparator: keyPartSeparator, keyPartSeparatorReplacement: separator,
                     uppercase: uppercase, lowercase: lowercase
-                ).encodeConfigReaderProperty(key: EMPTY_STRING, env: EMPTY_STRING, value: content, content: &encodedContent)
+                ).encodeConfigReaderProperty(key: root, env: EMPTY_STRING, value: content, content: &encodedContent)
 
                 // print(encodedContent)
 
+                guard let rootValue = encodedContent[root] else {
+                    throw ConfigEncodingError.noValue(byKey: root)
+                }
+
                 let data = try JSONSerialization.data(
-                    withJSONObject: encodedContent,
+                    withJSONObject: rootValue,
                     options: [.sortedKeys, .prettyPrinted]
                 )
                 let content = String(decoding: data, as: UTF8.self)

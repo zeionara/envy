@@ -52,6 +52,9 @@ public extension String {
         if let _ = try? NamingConvention.camelCase.regex?.wholeMatch(in: self) {
             return .camelCase
         }
+        if let _ = try? NamingConvention.capitalSnakeCase.regex?.wholeMatch(in: self) {
+            return .capitalSnakeCase
+        }
         
         return .unknown
     }
